@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Agent</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+    <aside class="sidebar">
+        <div class="logo">
+            <div class="logo-icon">🎓</div>
+            <div><h2>Study Agent</h2><span>مساعدك الذكي للدراسة</span></div>
+        </div>
+
+        <button class="new-chat-btn" onclick="newChat()">＋ محادثة جديدة</button>
+
+        <div class="sidebar-section">
+            <h3>الوصول السريع</h3>
+            <button class="sidebar-item" onclick="showDashboard()">📊 لوحة الطالب</button>
+            <button class="sidebar-item" onclick="openUpload()">📁 رفع ملفات</button>
+            <button class="sidebar-item" onclick="quickMessage('ابحث في ملفات الجامعة عن مشاريعي')">📚 ملفات الجامعة</button>
+            <button class="sidebar-item" onclick="quickMessage('لخص لي أهم المواد الموجودة في الجامعة')">📝 تلخيص المواد</button>
+            <button class="sidebar-item" onclick="quickMessage('سو لي اختبار تفاعلي من 5 أسئلة')">🧠 اختبار تفاعلي</button>
+        </div>
+
+        <div class="sidebar-section history-section">
+            <h3>المحادثات السابقة</h3>
+            <div id="conversationList"></div>
+        </div>
+
+        <div class="sidebar-bottom">
+            <div class="status"><span class="status-dot"></span> النظام متصل</div>
+        </div>
+    </aside>
+
+    <main class="main">
+        <header class="topbar">
+            <div>
+                <h1 id="pageTitle">Study Agent</h1>
+                <p id="pageSubtitle">مساعدك الذكي للدراسة والبحث في ملفاتك</p>
+            </div>
+            <div class="online-badge">● Online</div>
+        </header>
+
+        <section class="chat" id="chat">
+            <div class="welcome">
+                <div class="welcome-icon">🎓</div>
+                <h2>أهلًا بك في Study Agent 👋</h2>
+                <p>أقدر أبحث في ملفاتك الجامعية، أشرح لك المواد، ألخصها، وأسوي لك اختبارات تفاعلية.</p>
+                <div class="quick-actions">
+                    <button onclick="quickMessage('ابحث عن مشروع هندسة المتطلبات واشرحه لي')">🔍 ابحث في ملفاتي</button>
+                    <button onclick="quickMessage('لخص لي مشروع هندسة المتطلبات')">📝 لخص لي</button>
+                    <button onclick="quickMessage('سو لي اختبار تفاعلي من 5 أسئلة عن هندسة المتطلبات')">🧠 ابدأ اختبار</button>
+                </div>
+            </div>
+        </section>
+
+        <div class="input-container">
+            <div class="input-box">
+                <input id="messageInput" type="text" placeholder="اكتب سؤالك هنا..." autocomplete="off">
+                <button id="sendButton">إرسال</button>
+            </div>
+            <p class="input-hint">Study Agent يمكنه البحث وقراءة ملفاتك الجامعية</p>
+        </div>
+    </main>
+</div>
+
+<div class="modal hidden" id="dashboardModal">
+    <div class="modal-card">
+        <button class="close-btn" onclick="closeDashboard()">×</button>
+        <h2>📊 لوحة الطالب</h2>
+        <p class="modal-subtitle">ملخص استخدامك لـ Study Agent</p>
+        <div class="stats-grid">
+            <div class="stat-card"><span>📚</span><strong id="statFiles">0</strong><small>ملف</small></div>
+            <div class="stat-card"><span>💬</span><strong id="statConversations">0</strong><small>محادثة</small></div>
+            <div class="stat-card"><span>📝</span><strong id="statMessages">0</strong><small>رسالة</small></div>
+            <div class="stat-card"><span>🧠</span><strong id="statQuizzes">0</strong><small>اختبار</small></div>
+        </div>
+    </div>
+</div>
+
+<div class="modal hidden" id="uploadModal">
+    <div class="modal-card upload-card">
+        <button class="close-btn" onclick="closeUpload()">×</button>
+        <h2>📁 رفع ملف دراسي</h2>
+        <p class="modal-subtitle">ارفع ملفًا وسيتم حفظه داخل ملفات الجامعة.</p>
+        <label class="file-drop">
+            <input type="file" id="fileInput" accept=".pdf,.docx,.pptx,.xlsx,.xls,.txt,.md,.csv,.json">
+            <span>📎 اختر ملفًا</span>
+            <small>PDF, Word, PowerPoint, Excel وغيرها</small>
+        </label>
+        <div id="selectedFile" class="selected-file"></div>
+        <button id="uploadButton" class="primary-btn" onclick="uploadFile()">رفع الملف</button>
+        <p id="uploadStatus" class="upload-status"></p>
+    </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
