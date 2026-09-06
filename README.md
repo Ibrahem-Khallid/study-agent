@@ -1,286 +1,241 @@
+<div align="center">
+
 # 🎓 AI Study Agent
 
-An AI-powered study assistant built with **Node.js** and the **OpenAI API**.
+**An AI-powered study assistant that reads your university files and helps you learn from them.**
 
-The agent helps students study their university materials by searching and reading local course files, explaining topics, generating interactive quizzes, saving conversations, and providing a simple student dashboard.
+![Node.js](https://img.shields.io/badge/Node.js-43853D?style=flat&logo=node.js&logoColor=white)
+![Express.js](https://img.shields.io/badge/Express.js-000000?style=flat&logo=express&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=flat&logo=javascript&logoColor=black)
+![OpenAI](https://img.shields.io/badge/OpenAI_API-412991?style=flat&logo=openai&logoColor=white)
+![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=flat&logo=html5&logoColor=white)
+![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=flat&logo=css3&logoColor=white)
+![Status](https://img.shields.io/badge/status-student%20project-yellow)
 
----
-
-## 🚀 Features
-
-* 📚 **University Material Search**
-
-  * Search through university files and folders.
-  * Supports multiple file formats.
-
-* 📄 **File Reading**
-
-  * PDF
-  * DOCX
-  * PPTX
-  * XLSX / XLS
-  * TXT
-  * Markdown
-  * CSV
-  * JSON
-
-* 🤖 **AI Study Assistant**
-
-  * Ask questions about course materials.
-  * Get explanations and summaries.
-  * Uses OpenAI's Responses API.
-
-* 📝 **Interactive Quizzes**
-
-  * Generates 5 multiple-choice questions.
-  * Answers are checked automatically.
-  * Provides explanations for answers.
-  * Calculates the final score.
-
-* 💬 **Conversation History**
-
-  * Saves previous conversations locally.
-  * Continue previous conversations.
-  * Delete conversations when needed.
-
-* 📊 **Student Dashboard**
-
-  * Number of university files.
-  * Number of conversations.
-  * Number of messages.
-  * Number of completed quizzes.
-
-* 📁 **File Upload**
-
-  * Upload study materials directly from the website.
-  * Uploaded files are stored inside the `university/uploads` folder.
+</div>
 
 ---
 
-## 🛠️ Technologies Used
+## 📖 About
 
-* **JavaScript**
-* **Node.js**
-* **Express.js**
-* **OpenAI API**
-* **HTML**
-* **CSS**
-* **REST API**
-* **JSON**
-* **Git & GitHub**
+**AI Study Agent** is a web app that lets a university student chat with an AI agent about their own study materials. You drop your PDFs, Word docs, slides, and spreadsheets into a local folder (or upload them from the browser), and the agent can search, read, and explain them, or turn them into a 5-question quiz.
 
-### Node.js Packages
+The AI agent doesn't just generate answers freely — it works through a set of tools (list files, search files, read a file, run a quiz) and only touches the folder in **read-only** mode. It never creates, edits, deletes, or executes anything inside your study materials.
 
-* `openai`
-* `express`
-* `dotenv`
-* `pdf-parse`
-* `mammoth`
-* `pptx-text-parser`
-* `xlsx`
+📸 Screenshot placeholder — <img width="1904" height="894" alt="لقطة شاشة 2026-09-05 200057" src="https://github.com/user-attachments/assets/b4c4a19f-db42-40aa-991f-c52dfbec4e6f" />
+
+
+## ✨ Features
+
+| | Feature | Description |
+|---|---|---|
+| 🤖 | **AI study assistant** | Chat with an agent that answers questions and explains topics using your own files |
+| 🔎 | **File search** | Recursively search the `university` folder by file name |
+| 📂 | **Multi-format file reading** | Reads `.pdf`, `.docx`, `.pptx`, `.xlsx` / `.xls`, `.txt`, `.md`, `.csv`, and `.json` |
+| 🧠 | **Interactive quizzes** | Generates a 5-question multiple-choice quiz on a topic, checks each answer, explains it, and gives a final score |
+| 💬 | **Conversation history** | Conversations are saved on the server and can be reopened or deleted from the sidebar |
+| 📊 | **Student dashboard** | A quick summary of files available, conversations, messages sent, and quizzes completed |
+| 📁 | **In-browser upload** | Upload a study file directly from the web UI; it's saved into the university folder |
+| 🖥️ | **Simple web UI** | A clean, Arabic-language (RTL) single-page interface — sidebar, chat, dashboard and upload modals |
+| ⌨️ | **CLI mode** | The agent can also be run and chatted with directly from the terminal (`node agent.js`) |
 
 ---
 
-## 📂 Project Structure
+## 🧩 Architecture
 
-```text
+The agent doesn't call the OpenAI API directly to answer — it runs a **tool-calling loop**: the model decides which tool to call (list files, search, read a file, run quiz logic), the server executes it against the local file system, and the result is fed back to the model until it has a final answer.
+
+```mermaid
+flowchart LR
+    U([👤 User]) -->|types a message| W[🖥️ Web Interface<br/>HTML / CSS / JS]
+    W -->|POST /api/chat| S[⚙️ Express.js Backend<br/>server.js]
+    S --> A[🧠 AI Agent<br/>agent.js]
+    A -->|function calling| T[🛠️ Tools:<br/>list_files / search_files / read_file / quiz]
+    T --> F[(📁 university/ folder<br/>PDF · DOCX · PPTX · XLSX · TXT · MD · CSV · JSON)]
+    A -->|Responses API| O[(🤖 OpenAI API)]
+    S --> D[(💾 data/<br/>conversations.json · quiz_history.json)]
+```
+
+**How a chat message flows:**
+1. The browser sends the message (plus recent history) to `POST /api/chat`.
+2. `agent.js` sends it to the OpenAI Responses API along with the available tools.
+3. If the model wants to look something up, it calls a tool (e.g. `search_files`, `read_file`) — the server runs it locally and returns the result to the model.
+4. This repeats until the model returns a final text answer, which is sent back to the browser and appended to the conversation file on disk.
+
+---
+
+## 🗂️ Project Structure
+
+```
 study-agent/
-│
-├── agent.js              # AI agent and tools
-├── server.js             # Express server and API routes
-├── package.json          # Project dependencies
-├── package-lock.json
-├── .gitignore
-│
-├── public/
-│   ├── index.html        # Web interface
-│   ├── app.js            # Frontend JavaScript
-│   └── style.css         # Website styling
-│
-├── university/
-│   ├── Course files...
-│   └── uploads/          # Uploaded study materials
-│
-├── data/
+├── server.js         # Express server: API routes, conversations, dashboard, upload
+├── agent.js          # AI agent: OpenAI tool-calling loop, file readers, quiz logic
+├── index.html         # Main page markup (sidebar, chat, dashboard & upload modals)
+├── app.js             # Front-end logic: chat, sidebar, dashboard, upload
+├── style.css          # Styling for the interface
+├── university/         # (created at runtime) your study files live here
+│   └── uploads/         # files uploaded from the web UI land here
+├── data/               # (created at runtime) local persisted data
 │   ├── conversations.json
 │   └── quiz_history.json
-│
-└── start-study-agent.vbs # Quick launcher
+└── .env                # OPENAI_API_KEY (not committed)
 ```
+
+> **Note:** `server.js` serves static assets from a `public/` folder (`express.static(path.join(__dirname, "public"))`). If you're running the project as-is, make sure `index.html`, `app.js`, and `style.css` are placed inside a `public/` directory next to `server.js` (or update that line if you'd rather serve them from the project root).
+>
+> The `university/` and `data/` folders are created automatically the first time the server runs — you don't need to create them by hand.
 
 ---
 
-## ⚙️ Installation
+## 🚀 Getting Started
 
-### 1. Clone the repository
+### Prerequisites
 
-```bash
-git clone https://github.com/Ibrahem-Khallid/study-agent.git
-```
+- [Node.js](https://nodejs.org/) (v18 or later recommended)
+- An [OpenAI API key](https://platform.openai.com/api-keys)
 
-```bash
-cd study-agent
-```
+### Installation
 
-### 2. Install dependencies
+> This project doesn't currently include a `package.json`. Based on the packages actually imported in the code, you'll need the following:
 
 ```bash
-npm install
+git clone https://github.com/your-username/ai-study-agent.git
+cd ai-study-agent
+
+npm init -y
+npm install express dotenv openai pdf-parse mammoth pptx-text-parser xlsx
 ```
 
-### 3. Add your OpenAI API Key
+*(Consider committing a `package.json` with these as dependencies and a `"start": "node server.js"` script so future installs are just `npm install && npm start`.)*
+
+### Environment Variables
 
 Create a `.env` file in the project root:
 
 ```env
-OPENAI_API_KEY=your_api_key_here
+OPENAI_API_KEY=your_openai_api_key_here
 ```
 
-⚠️ **Never upload your `.env` file or API key to GitHub.**
+> The server itself runs on a fixed port (`3000`, set directly in `server.js`) — there's no `PORT` environment variable in the current code.
 
----
-
-## 📚 Add University Materials
-
-Place your course materials inside:
-
-```text
-university/
-```
-
-You can organize them into folders by course, semester, or level.
-
-Example:
-
-```text
-university/
-├── المستوى الأول/
-├── المستوى الثاني/
-├── المستوى الثالث/
-└── ...
-```
-
-The AI agent can search these files and use their content when answering questions.
-
----
-
-## ▶️ Run the Project
-
-Start the server:
+### Running the app
 
 ```bash
-npm start
+node server.js
 ```
 
-Then open:
+Then open **http://localhost:3000** in your browser.
 
-```text
-http://localhost:3000
-```
+You can also chat with the agent directly from the terminal, without the web UI:
 
-You can also use the included launcher:
-
-```text
-start-study-agent.vbs
+```bash
+node agent.js
 ```
 
 ---
 
-## 🧠 How It Works
+## 🖱️ Usage
 
-The project consists of three main parts:
+1. **Add study materials** — drop PDF/DOCX/PPTX/XLSX/TXT/MD/CSV/JSON files into the `university/` folder, or use the **📁 Upload** button in the sidebar.
+2. **Ask a question** — type something like *"Summarize the requirements engineering project"* and the agent will search and read the relevant file(s) before answering.
+3. **Take a quiz** — ask for a quiz on a topic; the agent generates 5 multiple-choice questions from your material, one at a time, and gives you your score at the end.
+4. **Check your dashboard** — open **📊 Student Dashboard** to see how many files, conversations, messages, and quizzes you've racked up.
+5. **Revisit conversations** — previous chats are listed in the sidebar and can be reopened or deleted.
 
-### 1. Frontend
+<details>
+<summary>💬 <strong>Example: asking about a file</strong></summary>
 
-The frontend is built using:
+```
+You: Summarize the requirements engineering project for me
 
-* HTML
-* CSS
-* JavaScript
-
-It provides the chat interface, dashboard, conversation history, quiz interaction, and file upload functionality.
-
-### 2. Backend
-
-The backend uses **Express.js** to:
-
-* Receive user messages.
-* Communicate with the AI agent.
-* Save conversations.
-* Handle file uploads.
-* Provide dashboard statistics.
-
-### 3. AI Agent
-
-`agent.js` contains the main AI logic.
-
-The agent can use tools to:
-
-```text
-list_files
-search_files
-read_file
-start_quiz
-save_quiz
-get_current_question
-answer_quiz
+Agent: [searches the university folder, reads the matching file]
+        Here's a summary of your requirements engineering project...
 ```
 
-This allows the AI to interact with the student's study materials instead of relying only on general knowledge.
+</details>
 
----
+<details>
+<summary>🧠 <strong>Example: a quiz session</strong></summary>
 
-## 🔐 Security
+```
+You: Make me a 5-question quiz about requirements engineering
 
-The project uses a `.gitignore` file to prevent sensitive or unnecessary files from being uploaded to GitHub.
+Agent: Question 1 of 5:
+       What is the main goal of requirements elicitation?
+       A) ...  B) ...  C) ...  D) ...
 
-Ignored files include:
+You: B
 
-```text
-.env
-node_modules/
-university/
-data/
+Agent: ✅ Correct! [short explanation]
+       Question 2 of 5: ...
 ```
 
-The university materials and API key therefore remain local to the machine.
+At the end of the 5 questions, the agent reports your score (e.g. *4/5*) and the result is saved to your quiz history.
+
+</details>
 
 ---
 
-## 🎯 Project Goal
+## 🧠 How the AI Agent Works
 
-The goal of this project is to build a practical AI-powered study assistant that can help students interact with their own university materials through natural language.
+The agent is built around **OpenAI's Responses API with function calling**. It's given a fixed set of tools and instructed to use them instead of guessing:
 
-Instead of manually searching through many files, the student can ask the AI questions and request explanations, summaries, or quizzes.
+| Tool | What it does |
+|---|---|
+| `list_files` | Lists files/folders inside `university/` |
+| `search_files` | Recursively searches file names inside `university/` |
+| `read_file` | Reads and extracts text from a specific file |
+| `start_quiz` | Starts a new 5-question quiz session for a topic |
+| `save_quiz` | Saves the 5 generated questions for the active quiz |
+| `get_current_question` | Returns the current quiz question |
+| `answer_quiz` | Checks the student's answer, scores it, and advances the quiz |
 
----
+A safety check (`getSafePath`) resolves every file path against the `university/` folder and rejects anything that tries to escape it, so the agent can only ever read files that live inside that folder.
 
-## 🔮 Future Improvements
+### Supported file formats
 
-Possible future features:
-
-* 📈 Advanced student performance analytics
-* 🎯 Personalized study plans
-* 📅 Exam and assignment reminders
-* 🧠 Adaptive quizzes based on student performance
-* 🔎 Improved semantic search
-* 👥 Multi-user support
-* ☁️ Cloud storage
-* 🔐 User authentication
-* 📱 Responsive mobile application
-
----
-
-## 👨‍💻 Author
-
-**Ibrahem Khalid**
-
-Information Systems Student
+| Format | Library used |
+|---|---|
+| PDF (`.pdf`) | `pdf-parse` |
+| Word (`.docx`) | `mammoth` |
+| PowerPoint (`.pptx`) | `pptx-text-parser` |
+| Excel (`.xlsx`, `.xls`) | `xlsx` |
+| Plain text / Markdown / CSV / JSON | native `fs.readFileSync` |
 
 ---
 
-## ⭐ Project Status
+## 🛠️ Technologies
 
-🚧 **Currently under development**
+- **Backend:** Node.js, Express.js
+- **AI:** OpenAI API (Responses API, function calling)
+- **File parsing:** `pdf-parse`, `mammoth`, `pptx-text-parser`, `xlsx`
+- **Frontend:** HTML, CSS, vanilla JavaScript (no framework)
+- **Storage:** Local JSON files on the server (`data/conversations.json`, `data/quiz_history.json`); the browser only uses `localStorage` to remember which conversation is currently open
+- **Version control:** Git & GitHub
 
-The project is being continuously improved with new AI-powered study features.
+---
+
+## 🚧 Future Improvements
+
+- [ ] Add a real `package.json` with pinned dependency versions and npm scripts
+- [ ] Full-text search inside files (currently search matches on file **names**, not file contents)
+- [ ] User authentication, so conversations aren't shared across everyone using the server
+- [ ] A proper database instead of flat JSON files for conversations/quiz history
+- [ ] English/multilingual UI (currently Arabic-only, right-to-left)
+- [ ] Automated tests for the agent's tool-calling logic
+
+---
+
+## 📌 Project Status
+
+This is a **student-built prototype** created as a portfolio/learning project. It works end-to-end for the core flows (chat, file reading, quizzes, dashboard, upload) but hasn't been hardened for production use — there's no authentication, and it's meant to be run locally by a single user.
+
+---
+
+
+
+<div align="center">
+
+Made as a university portfolio project 🎓
+
+</div>
